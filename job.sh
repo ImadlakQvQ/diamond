@@ -3,7 +3,7 @@
 #SBATCH --gpus-per-node=2         # Number of GPU(s) per node
 #SBATCH --output=log/%j.out      # log 保存地址
 #SBATCH --cpus-per-task=3         # CPU cores/threads
-#SBATCH --mem=4000M               # memory per node
+#SBATCH --mem=80gb               # memory per node
 #SBATCH --time=3-02:01
 
 module load python/3.10.13 gcc cuda opencv/4.10.0
