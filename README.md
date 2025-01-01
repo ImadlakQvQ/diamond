@@ -3,13 +3,13 @@
 
 
 >```
-#!/bin/bash
-#SBATCH --account=def-bboulet
-#SBATCH --output=log/exp.out
-#SBATCH --gres=:a100_3g.20gb:1
-#SBATCH --time=2-0:0:0
-#SBATCH --cpus-per-task=6  # Cores proportional to GPUs: 6 on Cedar, 16 on Graham.
-#SBATCH --mem=80gb
+>#!/bin/bash
+>#SBATCH --account=def-bboulet
+>#SBATCH --output=log/exp.out
+>#SBATCH --gres=:a100_3g.20gb:1
+>#SBATCH --time=2-0:0:0
+>#SBATCH --cpus-per-task=6  # Cores proportional to GPUs: 6 on Cedar, 16 on Graham.
+>#SBATCH --mem=80gb
 >
 >```
 
