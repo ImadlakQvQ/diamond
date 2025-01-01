@@ -1,4 +1,5 @@
 gymnasium==0.29.1
+atari
 ale-py==0.9.0
 h5py==3.11.0
 huggingface-hub==0.17.2
