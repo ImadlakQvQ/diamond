@@ -1,4 +1,4 @@
-# Diffusion for World Modeling: Visual Details Matter in Atari (NeurIPS 2024 Spotlight)
+# Diffusion for World Modeling
 
 [**TL;DR**] 💎 DIAMOND (DIffusion As a Model Of eNvironment Dreams) is a reinforcement learning agent trained entirely in a diffusion world model.
 
