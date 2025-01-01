@@ -1,5 +1,22 @@
 # Diffusion for World Modeling
 
+
+
+>```
+#!/bin/bash
+#SBATCH --account=def-bboulet
+#SBATCH --output=log/exp.out
+#SBATCH --gres=:a100_3g.20gb:1
+#SBATCH --time=2-0:0:0
+#SBATCH --cpus-per-task=6  # Cores proportional to GPUs: 6 on Cedar, 16 on Graham.
+#SBATCH --mem=80gb
+>
+>```
+
+
+
+
+
 [**TL;DR**] 💎 DIAMOND (DIffusion As a Model Of eNvironment Dreams) is a reinforcement learning agent trained entirely in a diffusion world model.
 
 🌍 [Project Page](https://diamond-wm.github.io) • 🤓 [Paper](https://arxiv.org/pdf/2405.12399) • 𝕏 [Atari thread](https://x.com/EloiAlonso1/status/1793916382779982120) • 𝕏 [CSGO thread](https://x.com/EloiAlonso1/status/1844803606064611771) • 💬 [Discord](https://discord.gg/74vha5RWPg)
