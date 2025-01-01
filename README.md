@@ -6,7 +6,7 @@
 
 ## Compute Canada module load
 >```bash
->module load python/3.11 gcc cuda opencv/4.10.0 
+>module load python/3.10.13 gcc cuda opencv/4.10.0 
 >
 <div align='center'>
   RL agent playing in autoregressive imagination of Atari world models
