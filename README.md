@@ -99,6 +99,7 @@ See [Visualization](#visualization) for more details about the available command
 To train with the hyperparameters used in the paper on cuda:0, launch:
 ```bash
 export HYDRA_FULL_ERROR=1
+export PYTHONPATH=/home/imadlak/projects/def-bboulet/imadlak/program/diamond:$PYTHONPATH
 python src/main.py env.train.id=BreakoutNoFrameskip-v4 common.devices=0
 ```
 
