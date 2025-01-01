@@ -4,6 +4,10 @@
 
 🌍 [Project Page](https://diamond-wm.github.io) • 🤓 [Paper](https://arxiv.org/pdf/2405.12399) • 𝕏 [Atari thread](https://x.com/EloiAlonso1/status/1793916382779982120) • 𝕏 [CSGO thread](https://x.com/EloiAlonso1/status/1844803606064611771) • 💬 [Discord](https://discord.gg/74vha5RWPg)
 
+## Compute Canada module load
+>```bash
+>module load python/3.11 gcc cuda opencv/4.10.0 
+>
 <div align='center'>
   RL agent playing in autoregressive imagination of Atari world models
   <br>
