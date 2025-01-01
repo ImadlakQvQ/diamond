@@ -6,11 +6,15 @@
 >#!/bin/bash
 >#SBATCH --account=def-bboulet
 >#SBATCH --output=log/exp.out
->#SBATCH --gres=:a100_3g.20gb:1
+>#SBATCH --gres=:2
 >#SBATCH --time=2-0:0:0
->#SBATCH --cpus-per-task=6  # Cores proportional to GPUs: 6 on Cedar, 16 on Graham.
+>#SBATCH --cpus-per-task=6  
 >#SBATCH --mem=80gb
->
+>module load python/3.10.13 gcc cuda opencv/4.10.0
+>source env/bin/activate
+>export HYDRA_FULL_ERROR=1
+>export PYTHONPATH=/home/imadlak/projects/def-bboulet/imadlak/program/diamond:$PYTHONPATH
+>python src/main.py env.train.id=BreakoutNoFrameskip-v4 common.devices=0
 >```
 
 
