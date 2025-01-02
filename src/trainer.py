@@ -233,8 +233,8 @@ class Trainer(StateDictMixin):
             should_collect_train = (self._rank == 0 and not self._is_model_free and not self._is_static_dataset and self.epoch <= self.num_epochs_collect)
 
             if should_collect_train:
-                c = self._cfg.collection.train
-                to_log += self._train_collector.send(NumToCollect(steps=c.steps_per_epoch))
+                c = self._cfg.collection.train              # 传入训练阶段参数
+                to_log += self._train_collector.send(NumToCollect(steps=c.steps_per_epoch))         # 收集steps_per_epoch个数据
             sd_train_dataset, = broadcast_if_needed(self.train_dataset.state_dict())  # update dataset for ranks > 0
             self.train_dataset.load_state_dict(sd_train_dataset)
             
@@ -282,7 +282,7 @@ class Trainer(StateDictMixin):
 
         steps = min_steps
         while True:
-            to_log += self._train_collector.send(NumToCollect(steps=steps))
+            to_log += self._train_collector.send(NumToCollect(steps=steps))             # 初始化先收集5000条数据
             num_steps = self.train_dataset.num_steps
             total_minority_rew = sum(sorted(self.train_dataset.counts_rew)[:-1])
             if total_minority_rew >= threshold_rew:
@@ -337,8 +337,8 @@ class Trainer(StateDictMixin):
         model_names = ["actor_critic"] if self._is_model_free else self._model_names
         # 对每一个model进行训练
         for name in model_names:
-            cfg = getattr(self._cfg, name).training
-            if self.epoch > cfg.start_after_epochs:
+            cfg = getattr(self._cfg, name).training         # 获取训练参数
+            if self.epoch > cfg.start_after_epochs:         # 如果当前epoch大于开始训练的epoch
                 steps = cfg.steps_first_epoch if self.epoch == 1 else cfg.steps_per_epoch
                 to_log += self.train_component(name, steps)
         return to_log
@@ -369,23 +369,23 @@ class Trainer(StateDictMixin):
         data_iterator = iter(data_loader) if data_loader is not None else None
         to_log = []
 
-        num_steps = cfg.grad_acc_steps * steps
+        num_steps = cfg.grad_acc_steps * steps              # 梯度累积的步数，
 
         for i in trange(num_steps, desc=f"Training {name}", disable=self._rank > 0):
             batch = next(data_iterator).to(self._device) if data_iterator is not None else None
             loss, metrics = model(batch) if batch is not None else model()
-            loss.backward()
+            loss.backward()             # 计算反向传播梯度，并保存在grad属性中
 
             num_batch = self.num_batch_train.get(name)
             metrics[f"num_batch_train_{name}"] = num_batch
             self.num_batch_train.set(name, num_batch + 1)
 
             if (i + 1) % cfg.grad_acc_steps == 0:
-                if cfg.max_grad_norm is not None:
+                if cfg.max_grad_norm is not None:           # clip
                     grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.max_grad_norm)
                     metrics["grad_norm_before_clip"] = grad_norm
 
-                opt.step()
+                opt.step()             # 梯度累计一段时间后，更新参数
                 opt.zero_grad()
 
                 if lr_sched is not None:
