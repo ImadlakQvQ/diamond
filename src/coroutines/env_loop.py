@@ -13,6 +13,9 @@ from envs import TorchEnv, WorldModelEnv
 def make_env_loop(
     env: Union[TorchEnv, WorldModelEnv], model: nn.Module, epsilon: float = 0.0
 ) -> Generator[Tuple[torch.Tensor, ...], int, None]:
+    """
+    协程函数 输入步数num_steps,输出状态观测、奖励等数据
+    """
     num_steps = yield
 
     hx = torch.zeros(env.num_envs, model.lstm_dim, device=model.device)

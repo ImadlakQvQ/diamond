@@ -22,12 +22,17 @@ def make_collector(
     reset_every_collect: bool = False,
     verbose: bool = True,
 ) -> Generator[Logs, int, None]:
+    """
+    
+    """
     num_envs = env.num_envs
-
     env_loop, buffer, episode_ids, dead = (None,) * 4
     num_steps, num_episodes, to_log, pbar = (None,) * 4
 
     def setup_new_collect():
+        """
+        重新定义collection
+        """
         nonlocal num_steps, num_episodes, buffer, to_log, pbar
         num_steps = 0
         num_episodes = 0
@@ -41,22 +46,28 @@ def make_collector(
         )
 
     def reset():
+        """
+        重启
+        """
         nonlocal env_loop, episode_ids, dead
         env_loop = make_env_loop(env, model, epsilon)
         episode_ids = defaultdict(lambda: None)
         dead = [None] * num_envs
 
+    # 给定需要收集的数据量
     num_to_collect = yield
+
     setup_new_collect()
     reset()
 
     while True:
+        # 走一步
         with torch.no_grad():
             all_obs, act, rew, end, trunc, *_, [infos] = env_loop.send(1)
 
         num_steps += num_envs
         pbar.update(num_envs if num_to_collect.steps is not None else 0)
-
+        # 按照环境数来存储transitions
         for i, (o, a, r, e, t) in enumerate(zip(all_obs, act, rew, end, trunc)):
             buffer[i].append((o, a, r, e, t))
             dead[i] = (e + t).clip(max=1).item()
@@ -75,7 +86,7 @@ def make_collector(
                 if episode_ids[i] is not None:
                     ep = dataset.load_episode(episode_ids[i]) + ep
                 episode_ids[i] = dataset.add_episode(ep, episode_id=episode_ids[i])
-
+ 
             if dead[i]:
                 to_log.append(
                     {
@@ -83,6 +94,7 @@ def make_collector(
                         **ep.compute_metrics(),
                     }
                 )
+                # 重新初始化buffer
                 buffer[i] = []
                 episode_ids[i] = None
                 pbar.update(1 if num_to_collect.episodes is not None else 0)
@@ -115,6 +127,9 @@ class NumToCollect:
         assert (self.steps is None) != (self.episodes is None)
 
     def can_stop(self, num_steps: int, num_episodes: int) -> bool:
+        '''
+        返回bool确定是否超过给定的num_steps or num_episodes
+        '''
         return num_steps >= self.steps if self.steps is not None else num_episodes >= self.episodes
 
     @property

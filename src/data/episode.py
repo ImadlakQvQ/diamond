@@ -31,6 +31,9 @@ class Episode:
         return (self.end + self.trunc).clip(max=1)
 
     def compute_metrics(self) -> Dict[str, Any]:
+        '''
+        episode长度,cumulative reward
+        '''
         return {"length": len(self), "return": self.rew.sum().item()}
 
     @classmethod

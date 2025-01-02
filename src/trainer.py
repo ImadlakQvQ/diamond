@@ -216,6 +216,7 @@ class Trainer(StateDictMixin):
                 if self._rank == 0:
                     self.num_epochs_collect, to_log_ = self.collect_initial_dataset()
                     to_log += to_log_
+                # 广播参数和数据集
                 self.num_epochs_collect, sd_train_dataset = broadcast_if_needed(self.num_epochs_collect, self.train_dataset.state_dict())
                 self.train_dataset.load_state_dict(sd_train_dataset)
 
@@ -267,6 +268,9 @@ class Trainer(StateDictMixin):
             wandb_log(self.collect_test(final=True), self.epoch)
 
     def collect_initial_dataset(self) -> Tuple[int, Logs]:
+        '''
+        初始化数据集
+        '''
         print("\nInitial collect\n")
         to_log = []
         c = self._cfg.collection.train
@@ -324,10 +328,14 @@ class Trainer(StateDictMixin):
         return to_log
 
     def train_agent(self) -> Logs:
+        '''
+        训练模型
+        '''
         self.agent.train()
         self.agent.zero_grad()
         to_log = []
         model_names = ["actor_critic"] if self._is_model_free else self._model_names
+        # 对每一个model进行训练
         for name in model_names:
             cfg = getattr(self._cfg, name).training
             if self.epoch > cfg.start_after_epochs:
@@ -347,6 +355,9 @@ class Trainer(StateDictMixin):
         return to_log
 
     def train_component(self, name: str, steps: int) -> Logs:
+        '''
+        训练component--name steps步
+        '''
         cfg = getattr(self._cfg, name).training
         model = getattr(self._agent, name)
         opt = self.opt.get(name)
