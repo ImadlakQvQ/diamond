@@ -90,8 +90,9 @@ class WorldModelEnv:
 
     @torch.no_grad()
     def predict_next_obs(self) -> Tuple[Tensor, List[Tensor]]:
+
         # TODO 这个地方不直接使用所有的obs_buffer，而是挑选出变化差别相对较大的obs
-        
+        print(self.obs_buffer.shape)
         return self.sampler.sample(self.obs_buffer, self.act_buffer)
 
     @torch.no_grad()

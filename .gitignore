@@ -9,7 +9,7 @@ checkpoints
 saved_runs
 dataset
 log
-
+.idea
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
