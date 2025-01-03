@@ -65,7 +65,7 @@ class WorldModelEnv:
     def step(self, act: torch.LongTensor) -> StepOutput:
         self.act_buffer[:, -1] = act
 
-        next_obs, denoising_trajectory = self.predict_next_obs()
+        next_obs, denoising_trajectory = self.predict_next_obs()            # next_obs: torch.Size([32, 3, 64, 64])  denoising_trajectory: List[torch.Size([32, 3, 64, 64])]这最后一个就是next_obs
         rew, end = self.predict_rew_end(next_obs.unsqueeze(1))
 
         self.ep_len += 1
@@ -91,8 +91,8 @@ class WorldModelEnv:
     @torch.no_grad()
     def predict_next_obs(self) -> Tuple[Tensor, List[Tensor]]:
 
-        # TODO 这个地方不直接使用所有的obs_buffer，而是挑选出变化差别相对较大的obs
-        print(self.obs_buffer.shape)                # torch.Size([32, 4， 3， 64，64])   self.act_buffer.shape  torch.Size([0，1，1，3])
+        # TODO 这个地方不直接使用所有的obs_buffer，怎么把关键帧抽出来，抽4帧 
+        # torch.Size([32, 4， 3， 64，64])   self.act_buffer.shape  torch.Size([0，1，1，3])
         return self.sampler.sample(self.obs_buffer, self.act_buffer)
 
     @torch.no_grad()

@@ -30,17 +30,19 @@ class DiffusionSampler:
     def sample(self, prev_obs: Tensor, prev_act: Tensor) -> Tuple[Tensor, List[Tensor]]:
         device = prev_obs.device
         b, t, c, h, w = prev_obs.size()
-        prev_obs = prev_obs.reshape(b, t * c, h, w)
+        prev_obs = prev_obs.reshape(b, t * c, h, w)         # torch.Size([32, 12, 64, 64])
         s_in = torch.ones(b, device=device)
         gamma_ = min(self.cfg.s_churn / (len(self.sigmas) - 1), 2**0.5 - 1)
-        x = torch.randn(b, c, h, w, device=device)
+        x = torch.randn(b, c, h, w, device=device)          # 初始化高斯噪声
         trajectory = [x]
+        # denoising process 总共有num_steps_denoising个sigma 总共
         for sigma, next_sigma in zip(self.sigmas[:-1], self.sigmas[1:]):
             gamma = gamma_ if self.cfg.s_tmin <= sigma <= self.cfg.s_tmax else 0
             sigma_hat = sigma * (gamma + 1)
             if gamma > 0:
                 eps = torch.randn_like(x) * self.cfg.s_noise
                 x = x + eps * (sigma_hat**2 - sigma**2) ** 0.5
+            # input the last 4 frames of the observation
             denoised = self.denoiser.denoise(x, sigma, prev_obs, prev_act)
             d = (x - denoised) / sigma_hat
             dt = next_sigma - sigma_hat
