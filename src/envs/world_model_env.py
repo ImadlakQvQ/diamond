@@ -71,9 +71,9 @@ class WorldModelEnv:
         self.ep_len += 1
         trunc = (self.ep_len >= self.horizon).long()
 
-        self.obs_buffer = self.obs_buffer.roll(-1, dims=1)
+        self.obs_buffer = self.obs_buffer.roll(-1, dims=1)          # 将最远的图换到最前面
         self.act_buffer = self.act_buffer.roll(-1, dims=1)
-        self.obs_buffer[:, -1] = next_obs
+        self.obs_buffer[:, -1] = next_obs                   # 更新新的obs
 
         dead = torch.logical_or(end, trunc)
 
@@ -92,7 +92,7 @@ class WorldModelEnv:
     def predict_next_obs(self) -> Tuple[Tensor, List[Tensor]]:
 
         # TODO 这个地方不直接使用所有的obs_buffer，而是挑选出变化差别相对较大的obs
-        print(self.obs_buffer.shape)
+        print(self.obs_buffer.shape)                # torch.Size([32, 4， 3， 64，64])   self.act_buffer.shape  torch.Size([0，1，1，3])
         return self.sampler.sample(self.obs_buffer, self.act_buffer)
 
     @torch.no_grad()

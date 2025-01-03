@@ -3,6 +3,8 @@ defaults:
   - env: atari
   - agent: default
 
+name: debug
+
 hydra:
   job:
     chdir: True
@@ -35,10 +37,10 @@ collection:
   train:
     num_envs: 1
     epsilon: 0.01
-    num_steps_total: 1000
+    num_steps_total: 100
     first_epoch:
-      min: 5000
-      max: 10000  # null: no maximum
+      min: 10
+      max: 100  # null: no maximum
       threshold_rew: 10
     steps_per_epoch: 10
   test:
@@ -83,8 +85,8 @@ denoiser:
   training:
     num_autoregressive_steps: 1
     start_after_epochs: 0
-    steps_first_epoch: 100
-    steps_per_epoch: 40
+    steps_first_epoch: 10
+    steps_per_epoch: 10
     sample_weights: [0.1, 0.1, 0.1, 0.7]
     batch_size: 32
     grad_acc_steps: 1
@@ -107,8 +109,8 @@ rew_end_model:
   training:
     seq_length: ${eval:'${world_model_env.horizon} + ${agent.denoiser.inner_model.num_steps_conditioning}'}
     start_after_epochs: 0
-    steps_first_epoch: 100
-    steps_per_epoch: 40
+    steps_first_epoch: 10
+    steps_per_epoch: 10
     sample_weights: ${denoiser.training.sample_weights}
     batch_size: 32
     grad_acc_steps: 1
@@ -126,8 +128,8 @@ actor_critic:
     batch_size: 32
     grad_acc_steps: 1
     start_after_epochs: 0
-    steps_first_epoch: 50
-    steps_per_epoch: 40
+    steps_first_epoch: 10
+    steps_per_epoch: 10
     lr_warmup_steps: 10
     max_grad_norm: 100.0
 

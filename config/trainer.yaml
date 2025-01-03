@@ -3,6 +3,8 @@ defaults:
   - env: atari
   - agent: default
 
+name: trainer
+
 hydra:
   job:
     chdir: True
