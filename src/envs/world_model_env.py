@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Generator, List, Tuple
-
+from torchvision import models, transforms
 import torch
 from torch import Tensor
 from torch.distributions.categorical import Categorical
 from torch.utils.data import DataLoader
-
+import numpy as np
 from coroutines import coroutine
 from models.diffusion import Denoiser, DiffusionSampler, DiffusionSamplerConfig
 from models.rew_end_model import RewEndModel
@@ -14,11 +14,25 @@ ResetOutput = Tuple[torch.FloatTensor, Dict[str, Any]]
 StepOutput = Tuple[Tensor, Tensor, Tensor, Tensor, Dict[str, Any]]
 InitialCondition = Tuple[Tensor, Tensor, Tuple[Tensor, Tensor]]
 
+resnet = models.resnet18(pretrained=True)
+resnet = torch.nn.Sequential(*list(resnet.children())[:-1])
+transform = transforms.Compose([transforms.Resize((64, 64)), transforms.ToTensor(),])
+
+def extract_hidden_features(image, model):
+    # 提取图像的特征
+    image = transform(image).unsqueeze(0)  # 增加 batch 维度
+    with torch.no_grad():
+        features = model(image)
+    return features.flatten().cpu().numpy()
+
+def cosine_similarity(vec1, vec2):
+    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
 @dataclass
 class WorldModelEnvConfig:
     horizon: int
     num_batches_to_preload: int
+    sim: bool
     diffusion_sampler: DiffusionSamplerConfig
 
 
@@ -34,6 +48,7 @@ class WorldModelEnv:
         self.sampler = DiffusionSampler(denoiser, cfg.diffusion_sampler)
         self.rew_end_model = rew_end_model
         self.horizon = cfg.horizon
+        self.sim = cfg.sim
         self.return_denoising_trajectory = return_denoising_trajectory
         self.num_envs = data_loader.batch_sampler.batch_size
         self.generator_init = self.make_generator_init(data_loader, cfg.num_batches_to_preload)
@@ -44,7 +59,7 @@ class WorldModelEnv:
 
     @torch.no_grad()
     def reset(self, **kwargs) -> ResetOutput:
-        obs, act, (hx, cx) = self.generator_init.send(self.num_envs)
+        obs, act, (hx, cx) = self.generator_init.send(self.num_envs)            # self.num_envs = 32
         self.obs_buffer = obs
         self.act_buffer = act
         self.hx_rew_end = hx
@@ -65,7 +80,7 @@ class WorldModelEnv:
     def step(self, act: torch.LongTensor) -> StepOutput:
         self.act_buffer[:, -1] = act
 
-        next_obs, denoising_trajectory = self.predict_next_obs()            # next_obs: torch.Size([32, 3, 64, 64])  denoising_trajectory: List[torch.Size([32, 3, 64, 64])]这最后一个就是next_obs
+        next_obs, denoising_trajectory = self.predict_next_obs()            # next_obs: torch.Size([32, 3, 64, 64])  denoising_trajectory: List[torch.Size([32, 3, 64, 64])]。这最后一个就是next_obs
         rew, end = self.predict_rew_end(next_obs.unsqueeze(1))
 
         self.ep_len += 1

@@ -37,7 +37,7 @@ class BatchSampler(torch.utils.data.Sampler):
 
     def sample(self) -> List[SegmentId]:
         num_episodes = self.dataset.num_episodes
-
+        # 计算episode采样权重
         if (self.sample_weights is None) or num_episodes < len(self.sample_weights):
             weights = self.dataset.lengths / self.dataset.num_steps
         else:
@@ -52,8 +52,8 @@ class BatchSampler(torch.utils.data.Sampler):
 
         episodes_partition = np.arange(self.rank, num_episodes, self.world_size)
         weights = np.array(weights[self.rank::self.world_size])
-        episode_ids = np.random.choice(episodes_partition, size=self.batch_size, replace=True, p=weights / weights.sum())
-        timesteps = np.random.randint(low=0, high=self.dataset.lengths[episode_ids])
+        episode_ids = np.random.choice(episodes_partition, size=self.batch_size, replace=True, p=weights / weights.sum())       # 随机采样batch_size个episode_ids 从[0,1,2,3]中选
+        timesteps = np.random.randint(low=0, high=self.dataset.lengths[episode_ids])            # 从0到episode_ids的长度中随机取一个数 32（batch_size）个 timesteps
 
         # padding allowed, both before start and after end
         if self.can_sample_beyond_end:
@@ -64,7 +64,8 @@ class BatchSampler(torch.utils.data.Sampler):
         else:
             stops = np.minimum(
                 self.dataset.lengths[episode_ids], timesteps + 1 + np.random.randint(0, self.seq_length, len(timesteps))
-            )
+            )           # min(episode_ids的长度，timesteps+1+随机数)
             starts = stops - self.seq_length
-
+            # TODO 设置锚点index，选取锚点index和starts-stops
+            ancher = starts - 5
         return [SegmentId(*x) for x in zip(episode_ids, starts, stops)]

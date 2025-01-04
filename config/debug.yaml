@@ -69,6 +69,7 @@ world_model_env:
   _target_: envs.WorldModelEnvConfig
   horizon: 15
   num_batches_to_preload: 256
+  sim: True
   diffusion_sampler:
     _target_: models.diffusion.DiffusionSamplerConfig
     num_steps_denoising: 3

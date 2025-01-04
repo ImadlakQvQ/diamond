@@ -112,8 +112,8 @@ class Trainer(StateDictMixin):
         if cfg.initialization.path_to_ckpt is not None:
             self.agent.load(**cfg.initialization)
 
-        # Collectors
-        if not self._is_static_dataset and self._rank == 0:
+        # Collectors   <generator object make_collector at 0x7f2909171770>
+        if not self._is_static_dataset and self._rank == 0:         
             self._train_collector = make_collector(
                 train_env, self.agent.actor_critic, self.train_dataset, cfg.collection.train.epsilon
             )
@@ -153,7 +153,8 @@ class Trainer(StateDictMixin):
             return None if (self._is_static_dataset and cfg.static_dataset.ignore_sample_weights) else sample_weights
 
         c = cfg.denoiser.training
-        seq_length = cfg.agent.denoiser.inner_model.num_steps_conditioning + 1 + c.num_autoregressive_steps
+        # TODO 尝试将conditioning step中添加锚定帧，确保生成过程的鲁棒性
+        seq_length = cfg.agent.denoiser.inner_model.num_steps_conditioning + 1 + c.num_autoregressive_steps         # 采样序列长度
         bs = make_batch_sampler(c.batch_size, seq_length, get_sample_weights(c.sample_weights))
         dl_denoiser_train = make_data_loader(batch_sampler=bs)
         dl_denoiser_test = DatasetTraverser(self.test_dataset, c.batch_size, seq_length)
@@ -235,7 +236,7 @@ class Trainer(StateDictMixin):
             if should_collect_train:
                 c = self._cfg.collection.train              # 传入训练阶段参数
                 to_log += self._train_collector.send(NumToCollect(steps=c.steps_per_epoch))         # 收集steps_per_epoch个数据
-            sd_train_dataset, = broadcast_if_needed(self.train_dataset.state_dict())  # update dataset for ranks > 0
+                sd_train_dataset, = broadcast_if_needed(self.train_dataset.state_dict())  # update dataset for ranks > 0
             self.train_dataset.load_state_dict(sd_train_dataset)
             
             if self._cfg.training.should:
@@ -372,6 +373,7 @@ class Trainer(StateDictMixin):
         num_steps = cfg.grad_acc_steps * steps              # 梯度累积的步数，
 
         for i in trange(num_steps, desc=f"Training {name}", disable=self._rank > 0):
+            # TODO 这里采样的锚点数据该怎么用
             batch = next(data_iterator).to(self._device) if data_iterator is not None else None
             loss, metrics = model(batch) if batch is not None else model()
             loss.backward()             # 计算反向传播梯度，并保存在grad属性中

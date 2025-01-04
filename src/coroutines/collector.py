@@ -59,7 +59,7 @@ def make_collector(
 
     setup_new_collect()
     reset()
-
+    # TODO 这里保存了所有的transition数据，我们怎么筛选出关键帧数据呢
     while True:
         # 走一步
         with torch.no_grad():
