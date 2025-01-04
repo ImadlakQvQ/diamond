@@ -147,7 +147,7 @@ class Trainer(StateDictMixin):
             pin_memory_device=str(self._device) if self._use_cuda else "",
         )
 
-        make_batch_sampler = partial(BatchSampler, self.train_dataset, self._rank, self._world_size)
+        make_batch_sampler = partial(BatchSampler, self.train_dataset, self._rank, self._world_size, cfg.anchor)
 
         def get_sample_weights(sample_weights: List[float]) -> Optional[List[float]]:
             return None if (self._is_static_dataset and cfg.static_dataset.ignore_sample_weights) else sample_weights

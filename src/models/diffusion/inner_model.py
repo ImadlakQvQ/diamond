@@ -11,6 +11,7 @@ from ..blocks import Conv3x3, FourierFeatures, GroupNorm, UNet
 
 @dataclass
 class InnerModelConfig:
+    use_anchor: bool
     img_channels: int
     num_steps_conditioning: int
     cond_channels: int

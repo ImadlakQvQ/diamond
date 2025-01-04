@@ -10,7 +10,7 @@ class SegmentId:
     episode_id: int
     start: int
     stop: int
-    ancher: int
+    anchor: int
 
 
 @dataclass

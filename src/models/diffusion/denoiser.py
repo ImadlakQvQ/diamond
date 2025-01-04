@@ -93,15 +93,25 @@ class Denoiser(nn.Module):
     def forward(self, batch: Batch) -> LossAndLogs:
         n = self.cfg.inner_model.num_steps_conditioning
         seq_length = batch.obs.size(1) - n
-
         all_obs = batch.obs.clone()
         loss = 0
 
         for i in range(seq_length):
-            obs = all_obs[:, i : n + i]
-            next_obs = all_obs[:, n + i]
-            act = batch.act[:, i : n + i]
-            mask = batch.mask_padding[:, n + i]
+            # TODO 加入anchor之后计算预测的next_obs
+            if not self.cfg.inner_model.use_anchor:
+                obs = all_obs[:, i + 1 : n + i + 1]
+                next_obs = all_obs[:, n + i + 1]
+                act = batch.act[:, i + 1 : n + i + 1]
+                mask = batch.mask_padding[:, n + i + 1]
+            else:
+                indices = torch.cat((torch.arange(i, i + 1), torch.arange(i + 2, i + n + 1)))
+                obs = all_obs[:, indices]
+                # obs = torch.cat((all_obs[:, i], all_obs[:, i + 2: n + i + 1]), dim=1)
+                next_obs = all_obs[:, n + i + 1]
+                act = batch.act[:, indices]
+                # act = batch.act[:, i : n + i + 1]
+                # 只提出next_obs的mask
+                mask = batch.mask_padding[:, n + i + 1]
 
             b, t, c, h, w = obs.shape
             obs = obs.reshape(b, t * c, h, w)

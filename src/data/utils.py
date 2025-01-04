@@ -12,11 +12,13 @@ from .segment import Segment, SegmentId
 def collate_segments_to_batch(segments: List[Segment]) -> Batch:
     attrs = ("obs", "act", "rew", "end", "trunc", "mask_padding")
     stack = (torch.stack([getattr(s, x) for s in segments]) for x in attrs)
-    return Batch(*stack, [s.info for s in segments], [s.id for s in segments])
+    output = Batch(*stack, [s.info for s in segments], [s.id for s in segments])
+    return output
 
 
 def make_segment(episode: Episode, segment_id: SegmentId, should_pad: bool = True) -> Segment:
-    assert segment_id.start < len(episode) and segment_id.stop > 0 and segment_id.start < segment_id.stop
+    # TODO 这里pad对ancher的影响是什么？这里anchor肯定不能是padding的啊，不然怎么做anchor
+    assert segment_id.start < len(episode) and segment_id.stop > 0 and segment_id.start < segment_id.stop and segment_id.anchor < segment_id.start
     pad_len_right = max(0, segment_id.stop - len(episode))
     pad_len_left = max(0, -segment_id.start)
     assert pad_len_right == pad_len_left == 0 or should_pad
@@ -27,18 +29,34 @@ def make_segment(episode: Episode, segment_id: SegmentId, should_pad: bool = Tru
 
     start = max(0, segment_id.start)
     stop = min(len(episode), segment_id.stop)
-    mask_padding = torch.cat((torch.zeros(pad_len_left), torch.ones(stop - start), torch.zeros(pad_len_right))).bool()
-
-    return Segment(
-        pad(episode.obs[start:stop]),
-        pad(episode.act[start:stop]),
-        pad(episode.rew[start:stop]),
-        pad(episode.end[start:stop]),
-        pad(episode.trunc[start:stop]),
+    anchor = segment_id.anchor
+    if anchor<0:
+        anchorobs = torch.zeros_like(episode.obs[0]).unsqueeze(0)
+        action = torch.zeros_like(episode.act[0]).unsqueeze(0)
+        reward = torch.zeros_like(episode.rew[0]).unsqueeze(0)
+        end = torch.zeros_like(episode.end[0]).unsqueeze(0)
+        trunc = torch.zeros_like(episode.trunc[0]).unsqueeze(0)
+        anchor_mask = torch.tensor(0)
+    else:
+        anchorobs = episode.obs[anchor].unsqueeze(0)
+        action = episode.act[anchor].unsqueeze(0)
+        reward = episode.rew[anchor].unsqueeze(0)
+        end = episode.end[anchor].unsqueeze(0)
+        trunc = episode.trunc[anchor].unsqueeze(0)
+        anchor_mask = torch.tensor(1)
+    
+    mask_padding = torch.cat((torch.tensor([anchor_mask]),torch.zeros(pad_len_left), torch.ones(stop - start), torch.zeros(pad_len_right))).bool()
+    outputs = Segment(
+        torch.cat((anchorobs, pad(episode.obs[start:stop]))),
+        torch.cat((action, pad(episode.act[start:stop]))),
+        torch.cat((reward, pad(episode.rew[start:stop]))),
+        torch.cat((end, pad(episode.end[start:stop]))),
+        torch.cat((trunc, pad(episode.trunc[start:stop]))),
         mask_padding,
         info=episode.info,
-        id=SegmentId(segment_id.episode_id, start, stop),
+        id=SegmentId(segment_id.episode_id, start, stop, anchor),
     )
+    return outputs
 
 
 class DatasetTraverser:

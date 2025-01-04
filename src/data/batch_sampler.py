@@ -13,6 +13,7 @@ class BatchSampler(torch.utils.data.Sampler):
         dataset: Dataset,
         rank: int,
         world_size: int,
+        anchor_size: int,
         batch_size: int,
         seq_length: int,
         sample_weights: Optional[List[float]] = None,
@@ -22,6 +23,7 @@ class BatchSampler(torch.utils.data.Sampler):
         assert isinstance(dataset, Dataset)
         self.dataset = dataset
         self.rank = rank
+        self.anchor_size = anchor_size
         self.world_size = world_size
         self.sample_weights = sample_weights
         self.batch_size = batch_size
@@ -63,9 +65,9 @@ class BatchSampler(torch.utils.data.Sampler):
         # padding allowed only before start
         else:
             stops = np.minimum(
-                self.dataset.lengths[episode_ids], timesteps + 1 + np.random.randint(0, self.seq_length, len(timesteps))
+                self.dataset.lengths[episode_ids], timesteps + 1 + np.random.randint(0, self.seq_length+self.anchor_size , len(timesteps))
             )           # min(episode_ids的长度，timesteps+1+随机数)
             starts = stops - self.seq_length
             # TODO 设置锚点index，选取锚点index和starts-stops
-            ancher = starts - 5
-        return [SegmentId(*x) for x in zip(episode_ids, starts, stops)]
+            anchor = starts - self.anchor_size
+        return [SegmentId(*x) for x in zip(episode_ids, starts, stops, anchor)]

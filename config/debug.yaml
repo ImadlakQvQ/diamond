@@ -1,9 +1,9 @@
 defaults:
   - _self_
   - env: atari
-  - agent: default
-
+  - agent: anchor_agent
 name: debug
+anchor: 5
 
 hydra:
   job:

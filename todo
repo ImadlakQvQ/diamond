@@ -1,4 +1,5 @@
-batch_sampler.py 69 设置锚点坐标
-思考怎么加入锚点到denoiser中
-denoiser.py
-trainer.py 376 采样的锚点数据怎么用
+; batch_sampler.py 69 设置锚点坐标
+; 思考怎么加入锚点到denoiser中
+; denoiser.py
+; trainer.py 376 采样的锚点数据怎么用
+加入anchor之后计算预测的next_obs denoiser.py 100
