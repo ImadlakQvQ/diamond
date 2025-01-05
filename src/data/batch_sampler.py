@@ -61,6 +61,7 @@ class BatchSampler(torch.utils.data.Sampler):
         if self.can_sample_beyond_end:
             starts = timesteps - np.random.randint(0, self.seq_length, len(timesteps))
             stops = starts + self.seq_length
+            anchor = starts - self.anchor_size
 
         # padding allowed only before start
         else:

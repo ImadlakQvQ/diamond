@@ -92,7 +92,7 @@ class Denoiser(nn.Module):
 
     def forward(self, batch: Batch) -> LossAndLogs:
         n = self.cfg.inner_model.num_steps_conditioning
-        seq_length = batch.obs.size(1) - n
+        seq_length = batch.obs.size(1) - n - 1
         all_obs = batch.obs.clone()
         loss = 0
 
