@@ -30,8 +30,9 @@ class DiffusionSampler:
     def sample(self, prev_obs: Tensor, prev_act: Tensor) -> Tuple[Tensor, List[Tensor]]:
         device = prev_obs.device
         # TODO 改变anchor长度，这里要改
-        prev_obs = prev_obs[:, -4:]
-        prev_act = prev_act[:, -4:]
+        indices = torch.tensor(0, 2, 3, 4)
+        prev_obs = prev_obs[:, indices]
+        prev_act = prev_act[:, indices]
         b, t, c, h, w = prev_obs.size()
         prev_obs = prev_obs.reshape(b, t * c, h, w)         # torch.Size([32, 12, 64, 64])
         s_in = torch.ones(b, device=device)
