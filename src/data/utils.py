@@ -81,10 +81,11 @@ class DatasetTraverser:
         chunks = []
         for episode_id in range(self.dataset.num_episodes):
             episode = self.dataset.load_episode(episode_id)
+            # TODO 这里anchor长度需要设计一下，怎么从全局变量cfg中引入
             chunks.extend(
                 make_segment(
                     episode,
-                    SegmentId(episode_id, start=i * self.chunk_size, stop=(i + 1) * self.chunk_size),
+                    SegmentId(episode_id, start=i * self.chunk_size, stop=(i + 1) * self.chunk_size, anchor=i * self.chunk_size - 5),
                     should_pad=True,
                 )
                 for i in range(math.ceil(len(episode) / self.chunk_size))
