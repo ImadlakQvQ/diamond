@@ -2,7 +2,7 @@ defaults:
   - _self_
   - env: atari
   - agent: anchor_agent
-name: debug
+name: debug       # name of the config
 anchor: 5
 
 hydra:
@@ -37,12 +37,12 @@ collection:
   train:
     num_envs: 1
     epsilon: 0.01
-    num_steps_total: 100
+    num_steps_total: 100  # 100000
     first_epoch:
-      min: 10
-      max: 100  # null: no maximum
+      min: 10   # 5000
+      max: 100  # 10000   null: no maximum
       threshold_rew: 10
-    steps_per_epoch: 10
+    steps_per_epoch: 10       # 100
   test:
     num_envs: 1
     num_episodes: 4
@@ -86,12 +86,12 @@ denoiser:
   training:
     num_autoregressive_steps: 1
     start_after_epochs: 0
-    steps_first_epoch: 10
-    steps_per_epoch: 10
+    steps_first_epoch: 10     # 10000
+    steps_per_epoch: 10       # 400
     sample_weights: [0.1, 0.1, 0.1, 0.7]
     batch_size: 32
     grad_acc_steps: 1
-    lr_warmup_steps: 10
+    lr_warmup_steps: 10     # 100 
     max_grad_norm: 1.0
 
   optimizer:
@@ -110,12 +110,12 @@ rew_end_model:
   training:
     seq_length: ${eval:'${world_model_env.horizon} + ${agent.denoiser.inner_model.num_steps_conditioning}'}
     start_after_epochs: 0
-    steps_first_epoch: 10
-    steps_per_epoch: 10
+    steps_first_epoch: 10     # 10000
+    steps_per_epoch: 10       # 400
     sample_weights: ${denoiser.training.sample_weights}
     batch_size: 32
     grad_acc_steps: 1
-    lr_warmup_steps: 10
+    lr_warmup_steps: 10       # 100
     max_grad_norm: 100.0
 
   optimizer:
@@ -129,9 +129,9 @@ actor_critic:
     batch_size: 32
     grad_acc_steps: 1
     start_after_epochs: 0
-    steps_first_epoch: 10
-    steps_per_epoch: 10
-    lr_warmup_steps: 10
+    steps_first_epoch: 10       # 5000
+    steps_per_epoch: 10       # 400
+    lr_warmup_steps: 10       # 100
     max_grad_norm: 100.0
 
   actor_critic_loss:
